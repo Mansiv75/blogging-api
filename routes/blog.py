@@ -121,4 +121,4 @@ def get_post(post_id):
         'createdAt': post.createdAt.isoformat()+'Z',
         'updatedAt': post.updatedAt.isoformat()+'Z'
     }
-    return jsonify(response), 201
+    return jsonify(response), 200
