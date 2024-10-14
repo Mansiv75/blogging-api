@@ -1,12 +1,73 @@
 from operator import or_
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, Flask
 from datetime import datetime
 from models import BlogPost
 from extensions import db
+from flasgger import Swagger # type: ignore
 blog_routes = Blueprint('blog', __name__)
 
 @blog_routes.route('/posts', methods=['POST'])
+
 def create_post():
+    """Create a new blog post.
+    ---
+    tags:
+      - Blog
+    parameters:
+      - name: post
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: 'Sample Blog Post'
+            content:
+              type: string
+              example: 'This is the content of the blog post.'
+            category:
+              type: string
+              example: 'Tech'
+            tags:
+              type: array
+              items:
+                type: string
+              example: ['Python', 'Flask']
+    responses:
+      201:
+        description: Blog post created
+        schema:
+          id: BlogPost
+          properties:
+            id:
+              type: integer
+              example: 1
+            title:
+              type: string
+              example: 'Sample Blog Post'
+            content:
+              type: string
+              example: 'This is the content of the blog post.'
+            category:
+              type: string
+              example: 'Tech'
+            tags:
+              type: array
+              items:
+                type: string
+              example: ['Python', 'Flask']
+            createdAt:
+              type: string
+              example: '2024-10-14T12:00:00Z'
+            updatedAt:
+              type: string
+              example: '2024-10-14T12:00:00Z'
+      400:
+        description: Missing required fields
+    """
+    
+
     
     data = request.get_json()
 
@@ -41,6 +102,26 @@ def create_post():
 
 @blog_routes.route('/posts', methods=['GET'])
 def get_posts():
+    """Get all blog posts or filter by search term.
+    ---
+    tags:
+      - Blog
+    parameters:
+      - name: term
+        in: query
+        type: string
+        required: false
+        description: The search term to filter posts by title, content, or category
+    responses:
+      200:
+        description: A list of blog posts
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/BlogPost'
+    """
+    
+
     term = request.args.get('term','')
 
     if term:
@@ -66,6 +147,48 @@ def get_posts():
 
 @blog_routes.route('/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
+    """Update an existing blog post by ID.
+    ---
+    tags:
+      - Blog
+    parameters:
+      - name: post_id
+        in: path
+        type: integer
+        required: true
+        description: The ID of the blog post to update
+      - name: post
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+              example: 'Updated Blog Post'
+            content:
+              type: string
+              example: 'This is the updated content of the blog post.'
+            category:
+              type: string
+              example: 'Tech'
+            tags:
+              type: array
+              items:
+                type: string
+              example: ['Python', 'Flask']
+    responses:
+      200:
+        description: Blog post updated
+        schema:
+          $ref: '#/definitions/BlogPost'
+      404:
+        description: Post not found
+      400:
+        description: Missing required fields
+    """
+    
+
     data =request.get_json()
     post=BlogPost.query.get(post_id)
 
@@ -96,6 +219,23 @@ def update_post(post_id):
 
 @blog_routes.route('/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
+    """Delete a blog post by ID.
+    ---
+    tags:
+      - Blog
+    parameters:
+      - name: post_id
+        in: path
+        type: integer
+        required: true
+        description: The ID of the blog post to delete
+    responses:
+      204:
+        description: Post deleted
+      404:
+        description: Post not found
+    """
+    
     post= BlogPost.query.get(post_id)
 
     if post is None:
@@ -107,6 +247,26 @@ def delete_post(post_id):
 
 @blog_routes.route('/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
+    """Get a single blog post by ID.
+    ---
+    tags:
+      - Blog
+    parameters:
+      - name: post_id
+        in: path
+        type: integer
+        required: true
+        description: The ID of the blog post to retrieve
+    responses:
+      200:
+        description: The blog post
+        schema:
+          $ref: '#/definitions/BlogPost'
+      404:
+        description: Post not found
+    """
+    
+
     post = BlogPost.query.get(post_id)
 
     if post is None:
@@ -122,3 +282,44 @@ def get_post(post_id):
         'updatedAt': post.updatedAt.isoformat()+'Z'
     }
     return jsonify(response), 200
+
+app = Flask(__name__)
+swagger = Swagger(app)
+
+
+@app.route("/swagger.json")
+def swagger_spec():
+    return jsonify(swagger.get_swagger())
+
+
+swagger.definition('BlogPost', {
+    'type': 'object',
+    'properties': {
+        'id': {
+            'type': 'integer'
+        },
+        'title': {
+            'type': 'string'
+        },
+        'content': {
+            'type': 'string'
+        },
+        'category': {
+            'type': 'string'
+        },
+        'tags': {
+            'type': 'array',
+            'items': {
+                'type': 'string'
+            }
+        },
+        'createdAt': {
+            'type': 'string',
+            'format': 'date-time'
+        },
+        'updatedAt': {
+            'type': 'string',
+            'format': 'date-time'
+        }
+    }
+})
