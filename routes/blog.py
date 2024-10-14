@@ -61,3 +61,10 @@ def delete_post(post_id):
     blog_posts=[p for p in blog_posts if p['id']!=post_id]
 
     return jsonify({"message": "Post deleted"}), 204
+
+@blog_routes.route('/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    post = next((p for p in blog_posts if p['id']== post_id), None)
+    if post is None:
+        return jsonify({"error": "Post not found"}), 404
+    return jsonify(post), 204
