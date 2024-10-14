@@ -1,82 +1,124 @@
+from operator import or_
 from flask import Blueprint, request, jsonify
-
+from datetime import datetime
+from models import BlogPost
+from extensions import db
 blog_routes = Blueprint('blog', __name__)
-
-blog_posts=[]
-post_id_counter = 1
 
 @blog_routes.route('/posts', methods=['POST'])
 def create_post():
-    global post_id_counter
-
+    
     data = request.get_json()
 
     if not data or 'title' not in data or 'content' not in data or 'category' not in data:
         return jsonify({"error": "Missing required fields"}), 400
     
-    new_post ={
-        'id': post_id_counter,
-        'title': data['title'],
-        'content': data['content'],
-        'category': data['category'],
-        'tags': data.get('tags',[]),
-        'createdAt': '2021-09-01T12:00:00Z',
-        'updatedAt': '2021-09-01T12:00:00Z'
-    }
-    blog_posts.append(new_post)
-    post_id_counter += 1
+    current_time = datetime.now()
+    
+    
+    new_post =BlogPost(
+        title=data.get('title'),
+        content=data.get('content'),
+        category=data.get('category'),
+        tags=data.get('tags', []),
+        createdAt=current_time,
+        updatedAt=current_time,
+    )
+    db.session.add(new_post)
+    db.session.commit()
 
-    return jsonify(new_post), 201
+    response={
+        'id': new_post.id,
+        'title': new_post.title,
+        'content': new_post.content,
+        'category': new_post.category,
+        'tags': new_post.tags,
+        'createdAt': new_post.createdAt.isoformat()+'Z',
+        'updatedAt': new_post.updatedAt.isoformat()+'Z'
+    }
+
+    return jsonify(response), 201
 
 @blog_routes.route('/posts', methods=['GET'])
 def get_posts():
-    term = request.args.get('term')
+    term = request.args.get('term','')
 
     if term:
-        filtered_posts =[
-            post for post in blog_posts
-            if term.lower() in post['title'].lower()
-            or term.lower() in post['content'].lower()
-            or term.lower() in post['category'].lower()
+        filtered_posts = BlogPost.query.filter(
+            or_(BlogPost.title.contains(term) ,
+            BlogPost.content.contains(term) ,
+            BlogPost.category.contains(term))
+        ).all()
+    else:
+        filtered_posts =BlogPost.query.all()    
+        
+    response = [{
+        'id': post.id,
+        'title': post.title,
+        'content': post.content,
+        'category': post.category,
+        'tags': post.tags,
+        'createdAt': post.createdAt.isoformat() + "Z",
+        'updatedAt': post.updatedAt.isoformat() + "Z"
+    } for post in filtered_posts]
 
-            
-        ]
-        return jsonify(filtered_posts)
-    return jsonify(blog_posts)
+    return jsonify(response), 200
 
 @blog_routes.route('/posts/<int:post_id>', methods=['PUT'])
-def update_post():
+def update_post(post_id):
     data =request.get_json()
-    post=next((p for p in blog_posts if p['id']==post_id), None)
+    post=BlogPost.query.get(post_id)
 
     if post is None:
         return jsonify({"error": "Post not found"}), 404
     if not data or 'title' not in data or 'content' not in data or 'category' not in data:
         return jsonify({"error": "Missing required fields"}), 400
     
-    post['title'] = data['title']
-    post['content'] = data['content']
-    post['category'] = data['category']
-    post['tags'] = data.get('tags', post['tags'])
-    post['updatedAt'] = '2021-09-01T12:00:00Z'
+    post.title = data['title']
+    post.content = data['content']
+    post.category = data['category']
+    post.tags = ', '.join(data.get('tags', post.tags))
+    post.updatedAt = datetime.now()
 
-    return jsonify(post), 200
+    db.session.commit()
+
+    response ={
+        'id': post.id,
+        'title': post.title,
+        'content': post.content,
+        'category': post.category,
+        'tags': post.tags,
+        'createdAt': post.createdAt.isoformat()+'Z',
+        'updatedAt': post.updatedAt.isoformat()+'Z'
+    }
+
+    return jsonify(response), 200
 
 @blog_routes.route('/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
-    global blog_posts
-
-    post= next((p for p in blog_posts if p['id']== post_id), None)
+    post= BlogPost.query.get(post_id)
 
     if post is None:
         return jsonify({"error": "Post not found"}), 404
-    blog_posts=[p for p in blog_posts if p['id']!=post_id]
+    db.session.delete(post)
+    db.session.commit()
 
     return jsonify({"message": "Post deleted"}), 204
 
 @blog_routes.route('/posts/<int:post_id>', methods=['GET'])
 def get_post(post_id):
-    post = next((p for p in blog_posts if p['id']== post_id), None)
+    post = BlogPost.query.get(post_id)
+
     if post is None:
         return jsonify({"error": "Post not found"}), 404
-    return jsonify(post), 204
+    
+    response={
+        'id': post.id,
+        'title': post.title,
+        'content': post.content,
+        'category': post.category,
+        'tags': post.tags,
+        'createdAt': post.createdAt.isoformat()+'Z',
+        'updatedAt': post.updatedAt.isoformat()+'Z'
+    }
+    return jsonify(response), 201
