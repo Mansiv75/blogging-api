@@ -30,6 +30,18 @@ def create_post():
 
 @blog_routes.route('/posts', methods=['GET'])
 def get_posts():
+    term = request.args.get('term')
+
+    if term:
+        filtered_posts =[
+            post for post in blog_posts
+            if term.lower() in post['title'].lower()
+            or term.lower() in post['content'].lower()
+            or term.lower() in post['category'].lower()
+
+            
+        ]
+        return jsonify(filtered_posts)
     return jsonify(blog_posts)
 
 @blog_routes.route('/posts/<int:post_id>', methods=['PUT'])
