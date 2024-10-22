@@ -82,4 +82,3 @@ Contributions are welcome! Feel free to submit a pull request or open an issue f
 - [Flask](https://flask.palletsprojects.com/) for the web framework.
 - [SQLAlchemy](https://www.sqlalchemy.org/) for the ORM.
 - [Flasgger](https://flasgger.readthedocs.io/) for the API documentation.
-https://roadmap.sh/projects/blogging-platform-api
