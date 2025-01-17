@@ -1,4 +1,3 @@
-
 # Blogging API
 
 A blogging platform API built with Flask and SQLAlchemy. This API allows users to create, read, update, and delete blog posts, with support for categories and tags.
@@ -20,34 +19,40 @@ A blogging platform API built with Flask and SQLAlchemy. This API allows users t
 
 ## Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd blog-platform-api
-   ```
+Clone the repository:
 
-2. **Create a virtual environment**:
-   ```bash
-   python -m venv venv
-   ```
+```bash
+git clone <repository-url>
+cd blog-platform-api
+```
 
-3. **Activate the virtual environment**:
-   - On Windows:
-     ```bash
-     venv\Scripts\activate
-     ```
-   - On macOS/Linux:
-     ```bash
-     source venv/bin/activate
-     ```
+Create a virtual environment:
 
-4. **Install the dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+python -m venv venv
+```
 
-5. **Set up the database** (optional, depending on your setup):
-   - Initialize your database if necessary.
+Activate the virtual environment:
+
+On Windows:
+```bash
+venv\Scripts\activate
+```
+
+On macOS/Linux:
+```bash
+source venv/bin/activate
+```
+
+Install the dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Set up the database (optional, depending on your setup):
+
+- Initialize your database if necessary.
 
 ## Running the API
 
@@ -57,12 +62,17 @@ To start the Flask application, run:
 python app.py
 ```
 
-The API will be accessible at `http://localhost:5000`.
+The API will be accessible at [http://localhost:5000](http://localhost:5000).
+
+## Live API
+
+The API is live on Render and can be accessed here:
+**[API Live Link](https://blogging-api-yo5p.onrender.com)**  
 
 ## API Documentation
 
-- Swagger UI is available at `http://localhost:5000/apidocs` for interactive API testing.
-- The `swagger.json` file can be accessed at `http://localhost:5000/apidocs/swagger.json`.
+- **Swagger UI**: Available at [http://localhost:5000/apidocs](http://localhost:5000/apidocs) for interactive API testing.
+- **Swagger JSON**: Accessible at [http://localhost:5000/apidocs/swagger.json](http://localhost:5000/apidocs/swagger.json).
 
 ## Testing
 
@@ -76,9 +86,8 @@ python -m unittest test_blog.py
 
 Contributions are welcome! Feel free to submit a pull request or open an issue for any improvements.
 
-
 ## Acknowledgments
 
-- [Flask](https://flask.palletsprojects.com/) for the web framework.
-- [SQLAlchemy](https://www.sqlalchemy.org/) for the ORM.
-- [Flasgger](https://flasgger.readthedocs.io/) for the API documentation.
+- Flask for the web framework.
+- SQLAlchemy for the ORM.
+- Flasgger for the API documentation.
